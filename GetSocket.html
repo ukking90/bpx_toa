@@ -16,10 +16,21 @@
     2. 소켓 연결 버튼클릭
     3. Subscribe 실행 (인풋창 항목은 placeholder 참고)
 
+    --------/topic/trade/${stockName}
     # rawData: 로우데이터
       - tradeTime: 체결시간, price: 금액
+
+    --------/topic/trade/${tradeOptionId}
+    # create: 게임생성 (배팅가능한 상태에 게임)
+    # startPrice: 게임 시가 지정
+    # finish: 게임 완전종료 (시간지남)
+    # fastFinish: 게임 조기종료 (시간은 안지났으나 결과나옴)
     # realTimeBetting: 실시간 배팅데이터
       - type: S(매도, 바이너리시 다운), B (매수, 바이너리시 업)
+
+    --------/user/queue/trade/bet
+    # gameBet: 본인이 배팅을 했을시 배팅 성공 알림 소켓
+    # betResult: 본인 배팅항목에 대한 게임 승패결과
   </pre>
   <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
   <input id="tradeOptionId" placeholder="tradeOptionId를 입력하세요." value="1"/>
