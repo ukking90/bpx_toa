@@ -11,6 +11,17 @@
 <body>
 
 <div>
+  <pre>
+    # 회차별 게임 결과만 알수 있는 API
+
+    resultType : "RoundStatus", //필수
+    tradeOptionId : 1, // 옵션 PK값   // 필수
+    isPlayStrs:"3", // 게임 상태 (1: 배팅대기, 2: 진행중, 3: 게임종료)
+    startDate: 'YYYY-MM-DD HH:mm:ss',  // 게임 시작시간 , ex) '2019-01-01 10:00:00'
+    endDate: 'YYYY-MM-DD HH:mm:ss',  // 마지막 게임시간, ex) '2019-01-01 12:00:00'
+    page: 0, // 페이지 정보 (0이 첫페잊)
+    size: 15 // 불러올갯수
+  </pre>
   <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
   <input id="tradeOptionId" placeholder="tradeOptionId를 입력하세요." value="1"/>
   <input id="stock" placeholder="종목명을 입력하세요." value="BTCUSDT"/>
@@ -117,7 +128,7 @@
         }
     });
   };
-  
+
   String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
   String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
   Number.prototype.zf = function(len){return this.toString().zf(len);};

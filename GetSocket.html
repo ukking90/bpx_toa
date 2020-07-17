@@ -11,6 +11,16 @@
 <body>
 
 <div>
+  <pre>
+    1. 토큰을 입력
+    2. 소켓 연결 버튼클릭
+    3. Subscribe 실행 (인풋창 항목은 placeholder 참고)
+
+    # rawData: 로우데이터
+      - tradeTime: 체결시간, price: 금액
+    # realTimeBetting: 실시간 배팅데이터
+      - type: S(매도, 바이너리시 다운), B (매수, 바이너리시 업)
+  </pre>
   <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
   <input id="tradeOptionId" placeholder="tradeOptionId를 입력하세요." value="1"/>
   <input id="stock" placeholder="종목명을 입력하세요." value="BTCUSDT"/>
