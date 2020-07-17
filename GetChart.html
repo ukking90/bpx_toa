@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="encrypt.js"></script>
+  <title>차트 조회</title>
+</head>
+<body>
+
+<div>
+  <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
+  <input id="stock" placeholder="종목명을 입력하세요." value="BTCUSDT"/>
+  <p style="display: inline-block;">차트</p>
+  <button onclick="getApi()">조회</button>
+  <div id="apiValue1"></div>
+</div>
+
+
+<script>
+
+  var URL = "http://testnet.bispex.com";
+  var startDate = new Date();
+  var endDate = new Date();
+  endDate.setDate(endDate.getDate() - 7);
+
+  function getApi(){
+    $.ajax({
+      type: "GET",
+      url: URL + '/option_api/stock/chart',
+      headers: {
+        Authorization: "Bearer " + $("#accessToken").val()
+      },
+      data: Qs.parse({
+        stock : $("#stock").val(),
+        period: 60, // 초단위
+        beginMillis:endDate.getTime(),
+        endMillis:startDate.getTime()
+      }),
+      success: function (objData) {
+        if(objData.length > 0){
+          var innerHTML = "";
+          innerHTML = "<div>";
+          objData.forEach(function(data){
+            Object.keys(data).some(function (v) {
+              innerHTML += "<span>" + v + " : " + data[v] + " </span>";
+            })
+          })
+          innerHTML += "</div>"
+          $("#apiValue1").append(innerHTML);
+        }
+      }
+    });
+  }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="encrypt.js"></script>
+  <title>PaintBoard</title>
+</head>
+<body>
+
+<div>
+  <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
+  <input id="tradeOptionId" placeholder="tradeOptionId를 입력하세요." value="1"/>
+  <input id="stock" placeholder="종목명을 입력하세요." value="BTCUSDT"/>
+  <input id="size" placeholder="한번에 조회할 데이터 갯수를 입력하세요." value="10"/>
+  <p style="display: inline-block;">PaintBoard</p>
+  // value : 1 - 매수 , 2 - 매도 , 3 - 무효 (게임결과)
+  <button onclick="getApi()">조회</button>
+  <div id="apiValue1"></div>
+
+  <input id="username" placeholder="사용자아이디를 입력하세요." value="option2@test.com"/>
+  <button onclick="setSocket()">소켓연결</button>
+  <button onclick="setSubscribe()">subscribe</button>
+
+  <div id="apiValue2" style="height: 400px;overflow: auto;"></div>
+</div>
+
+
+<script>
+
+  var URL = "http://testnet.bispex.com";
+  var startDate = new Date();
+  var endDate = new Date();
+  endDate.setDate(endDate.getDate() - 7);
+
+  var socket = {
+    stompClient: null,
+    isConnected: false,
+    connect : function(){
+      var token = $("#accessToken").val();
+      var username = $("#username").val();
+      if(!socket.isConnected){
+        socket.stompClient = Stomp.over(new SockJS(URL + "/bx_ws?principal=" + username + "/P"));
+
+        socket.stompClient.connect({'Authorization':"Bearer " + token}, function(){
+          socket.isConnected = true
+        })
+      }
+    },
+    disconnect: function() {
+      if (socket.stompClient && socket.isConnected) {
+        socket.unsubscribeAll()
+        socket.stompClient.disconnect();
+      }
+      socket.isConnected = false
+    },
+    subscribe: function(path, cbFn){
+      if (socket.isConnected) {
+        // var isSubscribe = store.getters.getOptSubscribe(path)
+        // if (!isSubscribe) {
+          var subscribe = socket.stompClient.subscribe(path,function(tick){
+            debugger;
+            var data;
+            try {
+              data = JSON.parse(tick.body)
+            } catch {
+              data = tick.body
+            }
+            if (cbFn) {
+              cbFn(data)
+            } else {
+              //
+            }
+          })
+        // }
+      }
+    },
+    unsubscribe: function(path){
+      if (socket.isConnected) {
+        //var subscribe = store.getters.getOptSubscribe(path)
+        //if (subscribe) {
+        //  socket.stompClient.unsubscribe(subscribe.id)
+        //}
+      }
+    },
+    send: (path, data) => {
+      if (socket.stompClient && socket.isConnected) {
+        socket.stompClient.send(path, JSON.stringify(data), {})
+      }
+    },
+    unsubscribeAll: () => {
+      //const subscribeList = store.state.optSubscribeList
+      //if (socket.isConnected) {
+      //  if (subscribeList) {
+      //    Object.keys(subscribeList).forEach(v => {
+      //      socket.unsubscribe(v)
+      //    })
+      //  }
+     // }
+    }
+  }
+
+  Date.prototype.format = function(f) {
+    if (!this.valueOf()) return " ";
+    var d = this;
+    return f.replace(/(YYYY|yy|MM|DD|E|HH|mm|ss|a\/p)/gi, function($1) {
+        switch ($1) {
+            case "YYYY": return d.getFullYear();
+            case "MM": return (d.getMonth() + 1).zf(2);
+            case "DD": return d.getDate().zf(2);
+            case "HH": return d.getHours().zf(2);
+            case "mm": return d.getMinutes().zf(2);
+            case "ss": return d.getSeconds().zf(2);
+            default: return $1;
+        }
+    });
+  };
+  
+  String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
+  String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
+  Number.prototype.zf = function(len){return this.toString().zf(len);};
+
+  function getApi(){
+    $.ajax({
+      type: "GET",
+      url: URL + '/option_api/trade/game/round/list',
+      headers: {
+        Authorization: "Bearer " + $("#accessToken").val()
+      },
+      data: Qs.parse({
+        resultType : "RoundStatus",
+        tradeOptionId : $("#tradeOptionId").val(),
+        isPlayStrs:"3",
+        startDate: endDate.format('YYYY-MM-DD HH:mm:ss'),
+        endDate: startDate.format('YYYY-MM-DD HH:mm:ss'),
+        page: 0,
+        size: $("#size").val()
+      }),
+      success: function (data) {
+        if(data.content.length > 0){
+          var innerHTML = "";
+          data.content.forEach(function(objData){
+            innerHTML = "<div>";
+            Object.keys(objData).some(function (v) {
+              innerHTML += "<span>" + v + " : " + objData[v] + " </span>";
+            })
+            innerHTML += "</div>"
+            $("#apiValue1").append(innerHTML);
+          })
+        }
+      }
+    });
+  }
+
+  function setSocket(){
+    socket.connect();
+  }
+
+  function setSubscribe(){
+    socket.subscribe("/user/queue/trade/bet", function(objData){
+      showSockData(objData);
+    });
+    socket.subscribe("/topic/trade/" + $("#tradeOptionId").val(), function(objData){
+      showSockData(objData);
+    });
+    socket.subscribe("/topic/trade/" + $("#stock").val(), function(objData){
+      showSockData(objData);
+    });
+  }
+
+  function showSockData(objData){
+    if(objData.data){
+      var innerHTML = "";
+      innerHTML = "<div><span> type : " + objData.type + " </span>";
+      Object.keys(objData.data).some(function (v) {
+        innerHTML += "<span>" + v + " : " + objData.data[v] + " </span>";
+      })
+      innerHTML += "</div>"
+      $("#apiValue2").append(innerHTML);
+    }
+  }
+
+</script>
+
+</body>
+</html>

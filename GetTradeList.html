@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"></script>
+  <script src="encrypt.js"></script>
+  <title>종목조회</title>
+</head>
+<body>
+
+<div>
+  <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
+
+  <p style="display: inline-block;">종목 조회</p>
+  <button onclick="getApi({url:'/option_api/trade/option/list',param:{isPlay:'1,2'}})">조회</button>
+  <p> * type : R - 랜트거래 / B - 바이너리옵션 , 1/2/5 - 1분/2분/5분 거래</p>
+  <p> * isPlay : 1 - 정상거래 , 2 - 거래정지 , 3 - 거래정지 및 노출X</p>
+  <p> * stock : 거래종목코드 / id : 타 API 호출시 tradeOptionId 에 들어가야할 해당 종목의 고유 ID</p>
+  <div id="apiValue1"></div>
+</div>
+
+
+<script>
+
+  var URL = "http://testnet.bispex.com"
+
+  function getApi(objData){
+    $.ajax({
+      type: "GET",
+      url: URL + objData.url,
+      headers: {
+        Authorization: "Bearer " + $("#accessToken").val()
+      },
+      data: Qs.parse(objData.param),
+      success: function (data) {
+        if(data.length > 0){
+          var innerHTML = "";
+          data.forEach(function(objData){
+            innerHTML = "<div>";
+            Object.keys(objData).some(function (v) {
+              if(v == "mondayStart") return true;
+              innerHTML += "<span>" + v + " : " + objData[v] + " </span>";
+            })
+            innerHTML += "</div>"
+            $("#apiValue1").append(innerHTML);
+          })
+        }
+      }
+    });
+  }
+
+
+</script>
+
+</body>
+</html>

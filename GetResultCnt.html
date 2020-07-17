@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="encrypt.js"></script>
+  <title>매수매도 횟수조회</title>
+</head>
+<body>
+
+<div>
+  <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
+  <input id="tradeOptionId" placeholder="tradeOptionId를 입력하세요." value="1"/>
+  <p style="display: inline-block;">매수매도 횟수</p>
+  // value : 1 - 매수 , 2 - 매도 , 3 - 무효 (게임결과)
+  <button onclick="getApi()">조회</button>
+  <div id="apiValue1"></div>
+</div>
+
+
+<script>
+
+  var URL = "http://testnet.bispex.com";
+
+  function getApi(){
+    $.ajax({
+      type: "GET",
+      url: URL + '/option_api/trade/summary/daily',
+      headers: {
+        Authorization: "Bearer " + $("#accessToken").val()
+      },
+      data: Qs.parse({
+        resultType : "BSCount",
+        tradeOptionId : $("#tradeOptionId").val()
+      }),
+      success: function (data) {
+        if(data){
+          var innerHTML = "";
+          innerHTML = "<div>";
+          Object.keys(data).some(function (v) {
+            innerHTML += "<span>" + v + " : " + data[v] + " </span>";
+          })
+          innerHTML += "</div>"
+          $("#apiValue1").append(innerHTML);
+        }
+      }
+    });
+  }
+
+</script>
+
+</body>
+</html>

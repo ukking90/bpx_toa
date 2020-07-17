@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="encrypt.js"></script>
+  <title>RoundList</title>
+</head>
+<body>
+
+<div>
+  <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
+  <input id="tradeOptionId" placeholder="tradeOptionId를 입력하세요." value="1"/>
+  <input id="stock" placeholder="종목명을 입력하세요." value="BTCUSDT"/>
+  <input id="username" placeholder="사용자아이디를 입력하세요." value="option2@test.com"/>
+  <button onclick="setSocket()">소켓연결</button>
+  <button onclick="setSubscribe()">subscribe</button>
+
+  <div id="apiValue2" style="height: 400px;overflow: auto;"></div>
+</div>
+
+
+<script>
+
+  var URL = "http://testnet.bispex.com";
+  var startDate = new Date();
+  var endDate = new Date();
+  endDate.setDate(endDate.getDate() - 7);
+
+  var socket = {
+    stompClient: null,
+    isConnected: false,
+    connect : function(){
+      var token = $("#accessToken").val();
+      var username = $("#username").val();
+      if(!socket.isConnected){
+        socket.stompClient = Stomp.over(new SockJS(URL + "/bx_ws?principal=" + username + "/P"));
+
+        socket.stompClient.connect({'Authorization':"Bearer " + token}, function(){
+          socket.isConnected = true
+        })
+      }
+    },
+    disconnect: function() {
+      if (socket.stompClient && socket.isConnected) {
+        socket.unsubscribeAll()
+        socket.stompClient.disconnect();
+      }
+      socket.isConnected = false
+    },
+    subscribe: function(path, cbFn){
+      if (socket.isConnected) {
+        // var isSubscribe = store.getters.getOptSubscribe(path)
+        // if (!isSubscribe) {
+          var subscribe = socket.stompClient.subscribe(path,function(tick){
+            debugger;
+            var data;
+            try {
+              data = JSON.parse(tick.body)
+            } catch {
+              data = tick.body
+            }
+            if (cbFn) {
+              cbFn(data)
+            } else {
+              //
+            }
+          })
+        // }
+      }
+    },
+    unsubscribe: function(path){
+      if (socket.isConnected) {
+        //var subscribe = store.getters.getOptSubscribe(path)
+        //if (subscribe) {
+        //  socket.stompClient.unsubscribe(subscribe.id)
+        //}
+      }
+    },
+    send: (path, data) => {
+      if (socket.stompClient && socket.isConnected) {
+        socket.stompClient.send(path, JSON.stringify(data), {})
+      }
+    },
+    unsubscribeAll: () => {
+      //const subscribeList = store.state.optSubscribeList
+      //if (socket.isConnected) {
+      //  if (subscribeList) {
+      //    Object.keys(subscribeList).forEach(v => {
+      //      socket.unsubscribe(v)
+      //    })
+      //  }
+     // }
+    }
+  }
+
+  function setSocket(){
+    socket.connect();
+  }
+
+  function setSubscribe(){
+    socket.subscribe("/user/queue/trade/bet", function(objData){
+      showSockData(objData);
+    });
+    socket.subscribe("/topic/trade/" + $("#tradeOptionId").val(), function(objData){
+      showSockData(objData);
+    });
+    socket.subscribe("/topic/trade/" + $("#stock").val(), function(objData){
+      showSockData(objData);
+    });
+  }
+
+  function showSockData(objData){
+    if(objData.data){
+      var innerHTML = "";
+      innerHTML = "<div><span> type : " + objData.type + " </span>";
+      Object.keys(objData.data).some(function (v) {
+        innerHTML += "<span>" + v + " : " + objData.data[v] + " </span>";
+      })
+      innerHTML += "</div>"
+      $("#apiValue2").append(innerHTML);
+    }
+  }
+
+</script>
+
+</body>
+</html>

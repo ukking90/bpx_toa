@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="encrypt.js"></script>
+  <title>RoundList</title>
+</head>
+<body>
+
+<div>
+  <input id="accessToken" placeholder="accessToken값을 입력해주세요." style="width:100%" value=""/>
+  <input id="tradeOptionId" placeholder="tradeOptionId를 입력하세요." value="1"/>
+  <input id="stock" placeholder="종목명을 입력하세요." value="BTCUSDT"/>
+  <input id="size" placeholder="한번에 조회할 데이터 갯수를 입력하세요." value="10"/>
+  <p style="display: inline-block;">RoundList</p>
+  <button onclick="getApi()">조회</button>
+  // status : 1 - 매수 , 2 - 매도 , 3 - 무효 (게임결과)
+  // round : 게임회차정보
+  <div id="apiValue1"></div>
+</div>
+
+
+<script>
+
+  var URL = "http://testnet.bispex.com";
+  var startDate = new Date();
+  var endDate = new Date();
+  endDate.setDate(endDate.getDate() - 7);
+
+  Date.prototype.format = function(f) {
+    if (!this.valueOf()) return " ";
+    var d = this;
+    return f.replace(/(YYYY|yy|MM|DD|E|HH|mm|ss|a\/p)/gi, function($1) {
+        switch ($1) {
+            case "YYYY": return d.getFullYear();
+            case "MM": return (d.getMonth() + 1).zf(2);
+            case "DD": return d.getDate().zf(2);
+            case "HH": return d.getHours().zf(2);
+            case "mm": return d.getMinutes().zf(2);
+            case "ss": return d.getSeconds().zf(2);
+            default: return $1;
+        }
+    });
+  };
+  
+  String.prototype.string = function(len){var s = '', i = 0; while (i++ < len) { s += this; } return s;};
+  String.prototype.zf = function(len){return "0".string(len - this.length) + this;};
+  Number.prototype.zf = function(len){return this.toString().zf(len);};
+
+  function getApi(){
+    $.ajax({
+      type: "GET",
+      url: URL + '/option_api/trade/game/round/list',
+      headers: {
+        Authorization: "Bearer " + $("#accessToken").val()
+      },
+      data: Qs.parse({
+        resultType : "RoundOhlc",
+        tradeOptionId : $("#tradeOptionId").val(),
+        isPlayStrs:"3",
+        startDate: endDate.format('YYYY-MM-DD HH:mm:ss'),
+        endDate: startDate.format('YYYY-MM-DD HH:mm:ss'),
+        page: 0,
+        size: $("#size").val()
+      }),
+      success: function (data) {
+        if(data.content.length > 0){
+          var innerHTML = "";
+          data.content.forEach(function(objData){
+            innerHTML = "<div>";
+            Object.keys(objData).some(function (v) {
+              innerHTML += "<span>" + v + " : " + objData[v] + " </span>";
+            })
+            innerHTML += "</div>"
+            $("#apiValue1").append(innerHTML);
+          })
+        }
+      }
+    });
+  }
+
+</script>
+
+</body>
+</html>
