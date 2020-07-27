@@ -9,14 +9,14 @@
 <body>
 
 <div>
-  <p>예제) 아이디: option2@test.com, 암호: 1234</p>
+  <p>비스팩스 아이디와 비밀번호를 입력해주세요.</p>
 
   <pre>
-    1. 토큰발급
+    1. 토큰발급 (한번 발행받은 토큰은 1년이상 사용가능합니다.)
     2. 발행된 토큰에서 refreshToken값을 기반으로 AccessToken 재발행
   </pre>
-  <input id="username" placeholder="아이디를 입력하세요" value="option2@test.com"/>
-  <input id="password" type="password" placeholder="비밀번호를 입력하세요" value="1234"/>
+  <input id="username" placeholder="아이디를 입력하세요" value=""/>
+  <input id="password" type="password" placeholder="비밀번호를 입력하세요" value=""/>
   <button onclick="getToken()">토큰 발급받기</button>
   <div id="tokenValue"></div>
   <button onclick="getRefreshToken()">토큰 갱신</button>
@@ -25,7 +25,7 @@
 
 <script>
 
-  var URL = "http://testnet.bispex.com"
+  var URL = "https://bispex.com"
   //  var URL = "http://localhost:8180"
   var OauthHeaders = {
     Authorization: "Basic " + btoa("tos_account:1qaz5tgbokmfa"),
